@@ -44,8 +44,8 @@ def parse_arguments():
         "--language",
         type=str,
         nargs="?",
-        help="The language to use, should be fr (French), en (English), es (Spanish), de (German), or cn (Chinese).",
-        default="en"
+        help="The language to use, should be char (ABC...Z+01...9) , fr (French), en (English), es (Spanish), de (German), or cn (Chinese).",
+        default="char"
     )
     parser.add_argument(
         "-c",
@@ -53,7 +53,7 @@ def parse_arguments():
         type=int,
         nargs="?",
         help="The number of images to be created.",
-        default=1000
+        default=10
     )
     parser.add_argument(
         "-rs",
@@ -89,7 +89,7 @@ def parse_arguments():
         type=int,
         nargs="?",
         help="Define how many words should be included in each generated sample. If the text source is Wikipedia, this is the MINIMUM length",
-        default=1
+        default=4
     )
     parser.add_argument(
         "-r",
@@ -104,7 +104,7 @@ def parse_arguments():
         type=int,
         nargs="?",
         help="Define the height of the produced images",
-        default=32,
+        default=40,
     )
     parser.add_argument(
         "-t",
@@ -120,7 +120,7 @@ def parse_arguments():
         type=str,
         nargs="?",
         help="Define the extension to save the image with",
-        default="jpg",
+        default="png",
     )
     parser.add_argument(
         "-k",
@@ -164,8 +164,8 @@ def parse_arguments():
         "--background",
         type=int,
         nargs="?",
-        help="Define what kind of background to use. 0: Gaussian Noise, 1: Plain white, 2: Quasicrystal, 3: Pictures",
-        default=0,
+        help="Define what kind of background to use. 0: Gaussian Noise, 1: Plain white, 2: Quasicrystal, 3: Pictures, default: myBackground",
+        default=10,
     )
     parser.add_argument(
         "-hw",
@@ -202,7 +202,7 @@ def parse_arguments():
         type=int,
         nargs="?",
         help="Define the width of the resulting image. If not set it will be the width of the text + 10. If the width of the generated text is bigger that number will be used",
-        default=-1
+        default=96
     )
     parser.add_argument(
         "-al",
@@ -231,6 +231,7 @@ def load_dict(lang):
     lang_dict = []
     with open(os.path.join('dicts', lang + '.txt'), 'r', encoding="utf8", errors='ignore') as d:
         lang_dict = d.readlines()
+        print ("lang: ", lang_dict)
     return lang_dict
 
 def load_fonts(lang):
@@ -262,7 +263,8 @@ def main():
     lang_dict = load_dict(args.language)
 
     # Create font (path) list
-    fonts = load_fonts(args.language)
+    # fonts = load_fonts(args.language)
+    fonts = load_fonts("en")
 
     # Creating synthetic sentences (or word)
     strings = []
@@ -289,7 +291,7 @@ def main():
         zip(
             [i for i in range(0, string_count)],
             strings,
-            [fonts[random.randrange(0, len(fonts))] for _ in range(0, string_count)],
+            [[fonts[random.randrange(0, len(fonts))] for j in range(args.length)] for _ in range(0, string_count)],
             [args.output_dir] * string_count,
             [args.format] * string_count,
             [args.extension] * string_count,

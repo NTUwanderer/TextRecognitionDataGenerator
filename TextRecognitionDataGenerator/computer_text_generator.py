@@ -1,26 +1,47 @@
 import random
+import numpy as np
 
 from PIL import Image, ImageColor, ImageFont, ImageDraw, ImageFilter
 
 class ComputerTextGenerator(object):
     @classmethod
-    def generate(cls, text, font, text_color, font_size):
-        image_font = ImageFont.truetype(font=font, size=font_size)
-        text_width, text_height = image_font.getsize(text)
+    def generate(cls, text, fonts, text_color, height, width):
+        cpyTxt = str(text)
+        index = -1
+        imgs = []
+        while len(cpyTxt) != 0:
+            index += 1
+            spaceIndex = cpyTxt.find(" ")
+            txt = str(cpyTxt)
+            if (spaceIndex != -1):
+                txt = cpyTxt[0:spaceIndex]
+                cpyTxt = cpyTxt[spaceIndex+1:]
+            else:
+                cpyTxt = ""
 
-        txt_img = Image.new('RGBA', (text_width, text_height), (0, 0, 0, 0))
+            font_size = int((0.8 + np.random.rand()/10) * height)
 
-        txt_draw = ImageDraw.Draw(txt_img)
+            image_font = ImageFont.truetype(font=fonts[index], size=font_size)
 
-        colors = [ImageColor.getrgb(c) for c in text_color.split(',')]
-        c1, c2 = colors[0], colors[-1]
+            text_width, text_height = image_font.getsize(txt)
+            txt_img = Image.new('RGBA', (text_width, text_height), (0, 0, 0, 0))
 
-        fill = (
-            random.randint(c1[0], c2[0]),
-            random.randint(c1[1], c2[1]),
-            random.randint(c1[2], c2[2])
-        )
+            txt_draw = ImageDraw.Draw(txt_img)
 
-        txt_draw.text((0, 0), text, fill=fill, font=image_font)
+            colors = [ImageColor.getrgb(c) for c in text_color.split(',')]
+            c1, c2 = colors[0], colors[-1]
 
-        return txt_img
+            rR = np.random.randint(256)
+            rG = np.random.randint(256)
+            rB = np.random.randint(256)
+            fill = (
+                rR,
+                rG,
+                rB
+            )
+
+            txt_draw.text((0, 0), txt, fill=fill, font=image_font)
+
+            imgs.append(txt_img)
+
+        return imgs
