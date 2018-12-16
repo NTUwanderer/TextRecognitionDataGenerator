@@ -23,19 +23,21 @@ class FakeTextDataGenerator(object):
 
     @classmethod
     def generate(cls, index, text, fonts, out_dir, height, extension, skewing_angle, random_skew, blur, random_blur, background_type, distorsion_type, distorsion_orientation, is_handwritten, name_format, width, alignment, text_color):
-        image = None
-
         ##########################
         # Create picture of text #
         ##########################
         images = ComputerTextGenerator.generate(text, fonts, text_color, height, width)
 
-        imgCnt = -1
-        for image in images:
-            imgCnt += 1
+        #############################
+        # Generate background image #
+        #############################
+        background_width = sum([ im.size[1] for im in images ])
+        background = Image.fromarray(np.ones((height, background_width, 3), dtype='uint8') * 255, "RGB")
 
+        print('# of images: {}'.format(len(images)))
+        acc_width = np.random.randint(2, 13) # offset
+        for idx, image in enumerate(images):
             random_angle = random.randint(0-skewing_angle, skewing_angle)
-
             rotated_img = image.rotate(skewing_angle if not random_skew else random_angle, expand=1)
 
             #############################
@@ -65,58 +67,18 @@ class FakeTextDataGenerator(object):
             ##################################
             # Resize image to desired format #
             ##################################
-
             new_width = int(float(distorted_img.size[0] + 10) * (float(height) / float(distorted_img.size[1] + 10)))
-
             resized_img = distorted_img.resize((new_width, height - 10), Image.ANTIALIAS)
 
-            background_width = width if width > 0 else new_width + 10
-
-            #############################
-            # Generate background image #
-            #############################
-            if background_type == 0:
-                background = BackgroundGenerator.gaussian_noise(height, background_width)
-            elif background_type == 1:
-                background = BackgroundGenerator.plain_white(height, background_width)
-            elif background_type == 2:
-                background = BackgroundGenerator.quasicrystal(height, background_width)
-            elif background_type == 3:
-                background = BackgroundGenerator.picture(height, background_width)
-            else:
-                background = BackgroundGenerator.myBackground(height, background_width)
 
             #############################
             # Place text with alignment #
             #############################
-
             new_text_width, _ = resized_img.size
-
-            deltaX = int((background_width - new_text_width - 5) / (len(fonts)-1))
-            x = 5 + deltaX * imgCnt
-            print ("x: ", x)
-
-            print ('h, w: ', height, width)
-            mask = np.ones((height, width, 3)) * 255
-            for h in range(height):
-                deltaW = int(width / len(fonts))
-                for w in range(deltaW*imgCnt, deltaW*(imgCnt+1)):
-                    mask[h][w][0] = 0
-                    mask[h][w][1] = 0
-                    mask[h][w][2] = 0
-
-            print ("mask: ", mask)
-            mask = Image.fromarray(np.asarray(np.clip(mask, 0, 255), dtype='uint8'), "RGB")
-            print ("mask: ", mask)
-            mask.save("mask.png")
-
-            background.paste(resized_img, (x, 5, x + new_width, height-5), resized_img)
-            # if alignment == 0:
-            #     background.paste(resized_img, (5, 5), resized_img)
-            # elif alignment == 1:
-            #     background.paste(resized_img, (int(background_width / 2 - new_text_width / 2), 5), resized_img)
-            # else:
-            #     background.paste(resized_img, (background_width - new_text_width - 5, 5), resized_img)
+            background.paste(resized_img, (int(acc_width), np.random.randint(2, 10)))
+            acc_width += new_text_width
+        
+        background = BackgroundGenerator.applyMyBackground(height, background_width, np.array(background))
 
         ##################################
         # Apply gaussian blur #

@@ -163,3 +163,73 @@ class BackgroundGenerator(object):
         p = Image.fromarray(np.asarray(np.clip(image, 0, 255), dtype='uint8'), "RGB")
         return p
 
+    @classmethod
+    def applyMyBackground(cls, height, width, image):
+        """
+            Create a background with dots and lines
+        """
+
+        def inP(h, w):
+            return (h >= 0 and h < height and w >=0 and w < width)
+        
+        numDots = 300
+        rH = np.random.randint(height, size=numDots)
+        rW = np.random.randint(width, size=numDots)
+        rR = np.random.randint(256, size=numDots)
+        rG = np.random.randint(256, size=numDots)
+        rB = np.random.randint(256, size=numDots)
+        
+        for i in range(numDots):
+            image[rH[i]][rW[i]][0] = rR[i]
+            image[rH[i]][rW[i]][1] = rG[i]
+            image[rH[i]][rW[i]][2] = rB[i]
+        
+        
+        numLines = np.random.randint(3) + 3
+        i = 0
+        while i < numLines:
+            i += 1
+            h1 = np.random.randint(height)
+            h2 = np.random.randint(height)
+            w1 = np.random.randint(width)
+            w2 = np.random.randint(width)
+            rR = np.random.randint(256)
+            rG = np.random.randint(256)
+            rB = np.random.randint(256)
+        
+        
+            if (abs(h1-h2) + abs(w1-w2) < height):
+                numLines += 1
+                continue
+        
+            if (abs(h1-h2) >= abs(w1-w2)):
+                if (h1 > h2):
+                    h1, h2 = h2, h1
+                    w1, w2 = w2, w1
+        
+                    
+                for h in range(h1, h2+1):
+                    w = int(w1 + (w2-w1) * h / (h2-h1))
+                    for j in range(0, 1):
+                        if inP(h, w + j):
+                            image[h][w+j][0] = rR
+                            image[h][w+j][1] = rG
+                            image[h][w+j][2] = rB
+        
+            else:
+                if (w1 > w2):
+                    h1, h2 = h2, h1
+                    w1, w2 = w2, w1
+                    
+                for w in range(w1, w2+1):
+                    h = int(h1 + (h2-h1) * w / (w2-w1))
+                    for j in range(0, 1):
+                        if inP(h + j, w):
+                            image[h+j][w][0] = rR
+                            image[h+j][w][1] = rG
+                            image[h+j][w][2] = rB
+        
+        
+        p = Image.fromarray(np.asarray(np.clip(image, 0, 255), dtype='uint8'), "RGB")
+        return p
+

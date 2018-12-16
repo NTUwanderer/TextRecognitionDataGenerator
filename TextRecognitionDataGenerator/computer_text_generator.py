@@ -24,7 +24,7 @@ class ComputerTextGenerator(object):
             image_font = ImageFont.truetype(font=fonts[index], size=font_size)
 
             text_width, text_height = image_font.getsize(txt)
-            txt_img = Image.new('RGBA', (text_width, text_height), (0, 0, 0, 0))
+            txt_img = Image.new('RGBA', (text_width, text_height), (255, 255, 255, 255))
 
             txt_draw = ImageDraw.Draw(txt_img)
 
